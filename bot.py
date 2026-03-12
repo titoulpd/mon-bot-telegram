@@ -4,8 +4,13 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 
 # Tes clés (Railway les lira automatiquement)
-TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+
+if not TELEGRAM_TOKEN:
+    raise ValueError("TELEGRAM_TOKEN manquant !")
+if not ANTHROPIC_API_KEY:
+    raise ValueError("ANTHROPIC_API_KEY manquant !")
 
 # Client Claude
 claude = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
