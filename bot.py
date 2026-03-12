@@ -1,21 +1,11 @@
-import os
 import anthropic
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 
-# Tes clés (Railway les lira automatiquement)
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+TELEGRAM_TOKEN = "8505546835:AAFItD8jV43ikhV2U3iz7PxxrFvBW39UcGU"
+ANTHROPIC_API_KEY = "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"
 
-if not TELEGRAM_TOKEN:
-    raise ValueError("TELEGRAM_TOKEN manquant !")
-if not ANTHROPIC_API_KEY:
-    raise ValueError("ANTHROPIC_API_KEY manquant !")
-
-# Client Claude
 claude = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-
-# Historique des conversations par utilisateur
 conversations = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -28,37 +18,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_message = update.message.text
 
-    # Initialiser l'historique si nouveau user
     if user_id not in conversations:
         conversations[user_id] = []
 
-    # Ajouter le message de l'utilisateur
-    conversations[user_id].append({
-        "role": "user",
-        "content": user_message
-    })
+    conversations[user_id].append({"role": "user", "content": user_message})
 
-    # Garder seulement les 20 derniers messages (mémoire)
     if len(conversations[user_id]) > 20:
         conversations[user_id] = conversations[user_id][-20:]
 
     try:
-        # Appel à Claude
         response = claude.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=1024,
             system="Tu es un assistant utile et sympathique. Réponds toujours dans la langue de l'utilisateur.",
             messages=conversations[user_id]
         )
-
         reply = response.content[0].text
-
-        # Sauvegarder la réponse dans l'historique
-        conversations[user_id].append({
-            "role": "assistant",
-            "content": reply
-        })
-
+        conversations[user_id].append({"role": "assistant", "content": reply})
         await update.message.reply_text(reply)
 
     except Exception as e:
